@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CatPic</title>
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <script>
+    const allCats = {{ clowder }}
+    const filters = {{ filters }}
+    let some_cats = allCats
+    let regrets = false
+    let whitelist = ["cat"]
+    let blacklist = []
+    let catNum = 0
+    function new_catpic(){
+        img = document.getElementById("catpic");
+        caption = document.getElementById("kitty")
+        caption.innerHTML = "Code messed up somewhere LMAO";
+        if (Object.keys(some_cats).length > catNum + 1) {
+        catNum++
+        } else {
+        catNum = 0
+        }
+        if (Object.keys(some_cats).length === 0){
+            img.src = ""
+            img.alt = ""
+            caption.innerHTML = "No kitties :("
+        }
+        else
+        {
+            pic = some_cats[Object.keys(some_cats)[catNum]]
+            img.src = pic[0];
+            img.alt = pic[2]
+            caption.innerHTML = pic[2]
+        }
+    };
+    function filter_pics(){
+        let sorting = JSON.parse(JSON.stringify(allCats))
+        some_cats = {}
+        num = 0
+        let regrets = false
+        for (fil in whitelist){
+            for (pic in sorting){
+                for (cat in sorting[pic][1]){
+                    if (whitelist[fil] === sorting[pic][1][cat]){
+                        some_cats[num] = sorting[pic]
+                        num++
+                        delete sorting[pic]
+                        break
+                    }
+                }
+            }
+        }
+        for (fil in blacklist){
+            for(pic in some_cats){
+                for (cat in some_cats[pic][1]){
+                    if (blacklist[fil] === some_cats[pic][1][cat]){
+                        delete some_cats[pic]
+                        break
+                    }
+                }
+            }
+        }
+    }
+    function neutralize(cat){
+        for (fil in blacklist){
+            if (blacklist[fil] === cat){
+                delete blacklist[fil]
+                break
+            }
+        }
+        for (fil in whitelist){
+            if (whitelist[fil] === cat){
+                delete whitelist[fil]
+                break
+            }
+        }
+    }
+    function add_to_neutral(cat){
+        neutralize(cat)
+        filter_pics()
+    }
+    function add_to_whitelist(cat){
+        neutralize(cat)
+        whitelist.push(cat)
+        filter_pics()
+    }
+    function add_to_blacklist(cat){
+        neutralize(cat)
+        blacklist.push(cat)
+        filter_pics()
+    }
+    function cyberpunk_2077(){
+        const bad_button = document.getElementById("regrets")
+        img = document.getElementById("catpic");
+        if (regrets){
+            regrets = false
+            img.onload = ""
+            bad_button.value = "Seizure Mode"
+        }
+        else{
+            regrets = true
+            img.onload = function(e){
+                new_catpic()
+                }
+            new_catpic()
+            bad_button.value = "I WANT TO GET OFF MR.BONES'S WILD RIDE"
+        }
+    }
+    </script>
+</head>
+<body>
+    <div class="flex container mx-auto">
+    <div class="text-center w-1/2">
+    <input type="button" onClick="new_catpic()" value="New Pic" id="new_pic">
+    <input type="button" onClick="cyberpunk_2077()" value="Seizure Mode" id="regrets">
+    <img src="{{ catpic.pic_url.url }}" onLoad="" width="512" id="catpic" class="rounded mx-auto">
+        <p id="kitty">{{ catpic.pic_name}}</p>
+    </div>
+    <div class="pl-10 w-1/2">
+    {% for filter in filters_qs %}
+        <p>{{ filter.fil_text }}</p>
+        <form id="{{ filter.fil_cat }}">
+            <input type="radio" onClick="add_to_blacklist('{{ filter.fil_cat }}')" id="blacklist" name="{{ filter.fil_cat }}"><label>blacklist</label>
+            <input type="radio" onClick="add_to_neutral('{{ filter.fil_cat }}')" id="neutral" name="{{ filter.fil_cat }}" checked><label>ignore</label>
+            <input type="radio" onClick="add_to_whitelist('{{ filter.fil_cat }}')" id="whitelist" name="{{ filter.fil_cat }}"><label>whitelist</label>
+        </form>
+    {% endfor %}
+    </div>
+    </div>
+    <script>
+    document.forms["cat"]["neutral"].checked=false
+    document.forms["cat"]["whitelist"].checked=true
+    </script>
+</body>
+
+</html>
